@@ -18,18 +18,4 @@
 			<TaskPouOid Prio="20" OTCID="#x08502001"/>
 		</TaskPouOids>
 	</Instance>
-	<Mappings>
-		<OwnerA>
-			<OwnerB Name="TIID^Device 1 (EtherCAT)^Box 4 (FANUC R-30iB Plus)">
-				<Link VarA="PlcTask Inputs^GVL_Fanuc.DI0" VarB="Transmit PDO3 Mapping^DO00"/>
-				<Link VarA="PlcTask Inputs^GVL_Fanuc.DI1" VarB="Transmit PDO3 Mapping^DO01"/>
-				<Link VarA="PlcTask Inputs^GVL_Fanuc.DI2" VarB="Transmit PDO3 Mapping^DO02"/>
-				<Link VarA="PlcTask Inputs^GVL_Fanuc.DI3" VarB="Transmit PDO3 Mapping^DO03"/>
-				<Link VarA="PlcTask Outputs^GVL_Fanuc.DO0" VarB="Receive PDO3 Mapping^DI00"/>
-				<Link VarA="PlcTask Outputs^GVL_Fanuc.DO1" VarB="Receive PDO3 Mapping^DI01"/>
-				<Link VarA="PlcTask Outputs^GVL_Fanuc.DO2" VarB="Receive PDO3 Mapping^DI02"/>
-				<Link VarA="PlcTask Outputs^GVL_Fanuc.DO3" VarB="Receive PDO3 Mapping^DI03"/>
-			</OwnerB>
-		</OwnerA>
-	</Mappings>
 </TcSmItem>
