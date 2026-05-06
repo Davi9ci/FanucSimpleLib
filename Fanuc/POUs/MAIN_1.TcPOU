@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MAIN_1" Id="{2348ea33-e4b1-4c4c-b9fa-7dd46418d2bd}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+  MAIN
+  Application-level orchestration for the FANUC R-30iB Plus robot interface.
+  This program stays in the application; the FBs it calls are library code.
+
+  Execution order each 10 ms scan:
+    1. FB_FanucStatus       – inject GVL_Fanuc.DI0, read status → stStatus
+    2. FB_FanucEnable       – run enable sequence, drive safety signals → stControl
+    3. FB_FanucStartProgram – stamp program-start bits into stControl (RSR or PNS)
+    4. FB_FanucCycleStop    – stamp CSTOPI into stControl if triggered
+    5. FB_FanucHoming       – stamp HOME into stControl if triggered
+    6. FB_FanucFaultReset   – stamp FAULT_RESET pulse into stControl if triggered
+    7. FB_FanucControl      – inject GVL_Fanuc.DO0, write stControl → EtherCAT outputs
+
+  Safety signal wiring (bExt* inputs on FB_FanucEnable):
+    Wire bExtIMSTP / bExtHold / bExtSFSPD / bExtStart from your application safety logic.
+    All default to FALSE; wire them before enabling the robot.
+
+  Program start:
+    Set eStartMode to match the FANUC controller UOP configuration (RSR or PNS).
+    Set nProgram (1..8 for RSR, 1..255 for PNS) then give bStartProgram a rising edge.
+    fbStart.bBusy goes TRUE during the 200 ms pulse; bAck goes TRUE for one scan
+    when the robot confirms the start.
+
+  Cycle Stop:
+    Set eCstopiMode to match the FANUC "CSTOPI for ABORT" system setting.
+    Give bCycleStop a rising edge. In Standard mode fbCycleStop.bDone goes TRUE
+    after the 20 ms pulse; in Abort mode bDone waits for the program to stop.
+
+  Homing:
+    Give bStartHome a rising edge (gated internally by fbEnable.bReady).
+    fbHoming.bDone goes TRUE when bAt_Home (UO[7]) is confirmed.
+
+  Fault Reset:
+    Give bFaultReset a rising edge to send the FAULT_RESET pulse (UI[5]).
+    Typically triggered when fbEnable.eState = ClearFault and the operator requests a reset.
+    fbFaultReset.bDone goes TRUE for one scan when bFault is confirmed cleared.
+    fbFaultReset.bError goes TRUE if the fault persists after the reset pulse; set bFaultReset
+    FALSE to reset the FB.
+*)
+PROGRAM MAIN
+VAR
+  // ── Core robot interface (library FBs) ────────────────────────────────────
+  fbStatus     : FB_FanucStatus;        // DI0 byte array → stStatus struct
+  fbControl    : FB_FanucControl;       // stControl struct → DO0 byte array
+  fbEnable     : FB_FanucEnable;        // Enable sequence state machine
+  fbFaultReset : FB_FanucFaultReset;    // Fault reset pulse – FAULT_RESET (UI[5])
+  fbStart      : FB_FanucStartProgram;  // Program start (RSR / PNS)
+  fbCycleStop  : FB_FanucCycleStop;     // Cycle Stop – CSTOPI (UI[4])
+  fbHoming     : FB_FanucHoming;        // Homing sequence – HOME (UI[7])
+  stStatus     : ST_FanucStatus;        // Live robot status (inputs)
+  stControl    : ST_FanucControl;       // Combined control command (outputs)
+
+  // ── Enable command ────────────────────────────────────────────────────────
+  bEnableRobot : BOOL;               // Set TRUE to start enable sequence
+
+  // ── External interlock signals (wire from application safety logic / HMI) ─
+  bExtIMSTP  : BOOL;  // Normally Closed: FALSE = software E-stop
+  bExtHold   : BOOL;  // Normally Closed: FALSE = pause/hold robot
+  bExtSFSPD  : BOOL;  // Normally Closed: FALSE = safe-speed limit active
+  bExtStart  : BOOL;  // Start command: forwarded to robot only when in Ready state
+
+  // ── Fault reset ───────────────────────────────────────────────────────────
+  bFaultReset  : BOOL;               // Rising edge: send FAULT_RESET pulse (UI[5])
+
+  // ── Cycle Stop ────────────────────────────────────────────────────────────
+  bCycleStop   : BOOL;               // Rising edge: send CSTOPI cycle stop command
+  eCstopiMode  : E_FanucCstopiMode;  // Must match FANUC "CSTOPI for ABORT" system setting
+
+  // ── Homing ────────────────────────────────────────────────────────────────
+  bStartHome   : BOOL;               // Rising edge: start homing sequence (gated by bReady)
+
+  // ── Program start ─────────────────────────────────────────────────────────
+  bStartProgram : BOOL;              // Rising edge: start program nProgram (gated by bReady)
+  nProgram      : INT := 1;          // Program to start: 1..8 (RSR) or 1..255 (PNS)
+  eStartMode    : E_FanucStartMode;  // RSR or PNS – must match FANUC controller UOP config
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+(* ════════════════════════════════════════════════════════════════════════════
+    1. READ STATUS  – inject hardware array; always first so all logic below
+                      sees fresh data this scan
+    ════════════════════════════════════════════════════════════════════════════ *)
+fbStatus(
+  aDI := GVL_Fanuc.DI0,
+  stStatus => stStatus);
+
+(* ════════════════════════════════════════════════════════════════════════════
+    2. ENABLE SEQUENCE
+      Wire bExt* from your application safety logic (PLC E-stop, fence, HMI pause).
+      FB outputs stControl with IMSTP/HOLD/SFSPD/ENBL set;
+      pulse and program-select bits are cleared – stamped by FBs below.
+    ════════════════════════════════════════════════════════════════════════════ *)
+fbEnable(
+  bEnable    := bEnableRobot,
+  stStatus   := stStatus,
+  bExtIMSTP  := bExtIMSTP,    // Wire from: NOT bSoftEStop (or TRUE if handled in hardware)
+  bExtHold   := bExtHold,     // Wire from: NOT bPauseButton
+  bExtSFSPD  := bExtSFSPD,    // Wire from: bFenceOK / area scanner
+  bExtStart  := bExtStart,    // Wire from: HMI start button or application logic
+  stControl  => stControl
+);
+
+(* ════════════════════════════════════════════════════════════════════════════
+    3. PROGRAM START  (RSR or PNS)
+      Rising edge on bStartProgram → 200 ms pulse on the selected program bits.
+      fbStart writes directly into stControl (VAR_IN_OUT) – no merging needed.
+      Check fbStart.bAck for robot confirmation; fbStart.bError for bad nProgram.
+    ════════════════════════════════════════════════════════════════════════════ *)
+fbStart(
+  bStart    := bStartProgram,
+  nProgram  := nProgram,
+  eMode     := eStartMode,
+  bReady    := fbEnable.bReady,
+  stStatus  := stStatus,
+  stControl := stControl
+);
+
+(* ════════════════════════════════════════════════════════════════════════════
+    4. CYCLE STOP  (CSTOPI UI[4])
+      Rising edge on bCycleStop → 20 ms CSTOPI pulse.
+      Set eCstopiMode to match the FANUC "CSTOPI for ABORT" system setting.
+      In Abort mode, fbCycleStop.bBusy stays TRUE until the program stops.
+    ════════════════════════════════════════════════════════════════════════════ *)
+fbCycleStop(
+  bTrigger  := bCycleStop,
+  eMode     := eCstopiMode,
+  stStatus  := stStatus,
+  stControl := stControl
+);
+
+(* ════════════════════════════════════════════════════════════════════════════
+    5. HOMING  (HOME UI[7])
+      Rising edge on bStartHome → 20 ms HOME pulse → wait for bAt_Home (UO[7]).
+      Gated internally by bReady: homing only starts when the robot is enabled.
+      fbHoming.bDone goes TRUE for one scan when bAt_Home is confirmed.
+    ════════════════════════════════════════════════════════════════════════════ *)
+fbHoming(
+  bStart    := bStartHome,
+  bReady    := fbEnable.bReady,
+  stStatus  := stStatus,
+  stControl := stControl
+);
+
+(* ════════════════════════════════════════════════════════════════════════════
+    6. FAULT RESET  (FAULT_RESET UI[5])
+      Rising edge on bFaultReset → 20 ms FAULT_RESET pulse → wait for bFault = FALSE.
+      Typically triggered by an HMI button when fbEnable.eState = ClearFault.
+      fbFaultReset.bDone goes TRUE for one scan when the fault is confirmed cleared.
+      fbFaultReset.bError goes TRUE if the fault persists; set bFaultReset FALSE to reset.
+    ════════════════════════════════════════════════════════════════════════════ *)
+fbFaultReset(
+  bReset    := bFaultReset,
+  stStatus  := stStatus,
+  stControl := stControl
+);
+
+(* ════════════════════════════════════════════════════════════════════════════
+    7. WRITE CONTROL  – inject hardware array; always last so it sees the
+                        final stControl state including all stamped bits
+    ════════════════════════════════════════════════════════════════════════════ *)
+fbControl(aDO := GVL_Fanuc.DO0, stControl := stControl);
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

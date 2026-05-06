@@ -1,0 +1,854 @@
+<?xml version="1.0"?>
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4026.22" ClassName="CFlbTermDef" SubType="9099">
+	<DataTypes>
+		<DataType>
+			<Name GUID="{18071995-0000-0000-0000-000300000010}" IecBaseType="true" AutoDeleteType="true">ARRAY [0..15] OF BYTE</Name>
+			<BitSize>128</BitSize>
+			<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+			<ArrayInfo>
+				<LBound>0</LBound>
+				<Elements>16</Elements>
+			</ArrayInfo>
+		</DataType>
+	</DataTypes>
+	<Box Id="4" BoxType="9099">
+		<Name>__FILENAME__</Name>
+		<ImageId>114</ImageId>
+		<EtherCAT SlaveType="2" PdiType="#x0008" MboxDataLinkLayer="true" StateMBoxPolling="true" CycleMBoxPollingTime="0" CoeType="23" VendorId="#x00000691" ProductCode="#x00010001" RevisionNo="#x00010000" InfoDataAddr="true" PortPhys="17" MaxSlotCount="256" MaxSlotGroupCount="1" SlotPdoIncrement="1" SlotIndexIncrement="16" Type="FANUC R-30iB Plus" Desc="FANUC R-30iB Plus">
+			<SyncMan>001000012600010001000000000000000001001026010000</SyncMan>
+			<SyncMan>001400012200010002000000000000000001001422010000</SyncMan>
+			<SyncMan>001840006400010003000000000000004000001864010000</SyncMan>
+			<SyncMan>002040002000010004000000000000004000002020010000</SyncMan>
+			<Fmmu>0000000000000000001800020100000001000000000000000000000000000000</Fmmu>
+			<Fmmu>0000000000000000002000010100000002000000000000000000000000000000</Fmmu>
+			<Fmmu>00000000000000000d0800010100000003000000000000000000000000000000</Fmmu>
+			<DcMode>467265652052756e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000</DcMode>
+			<Pdo Name="Transmit PDO1 Mapping" Index="#x1a00" Flags="#x0010">
+				<Entry Name="DO00" Index="#x3100" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Transmit PDO2 Mapping" Index="#x1a01" Flags="#x0010">
+				<Entry Name="DO00" Index="#x3101" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO01" Index="#x3101" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Transmit PDO3 Mapping" Index="#x1a02" Flags="#x0010" SyncMan="3">
+				<Entry Name="DO00" Index="#x3102" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO01" Index="#x3102" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO02" Index="#x3102" Sub="#x03">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO03" Index="#x3102" Sub="#x04">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Transmit PDO4 Mapping" Index="#x1a03" Flags="#x0010">
+				<Entry Name="DO00" Index="#x3103" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO01" Index="#x3103" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO02" Index="#x3103" Sub="#x03">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO03" Index="#x3103" Sub="#x04">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO04" Index="#x3103" Sub="#x05">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO05" Index="#x3103" Sub="#x06">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO06" Index="#x3103" Sub="#x07">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO07" Index="#x3103" Sub="#x08">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Transmit PDO5 Mapping" Index="#x1a04" Flags="#x0010">
+				<Entry Name="DO00" Index="#x3104" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO01" Index="#x3104" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO02" Index="#x3104" Sub="#x03">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO03" Index="#x3104" Sub="#x04">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO04" Index="#x3104" Sub="#x05">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO05" Index="#x3104" Sub="#x06">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO06" Index="#x3104" Sub="#x07">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO07" Index="#x3104" Sub="#x08">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO08" Index="#x3104" Sub="#x09">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO09" Index="#x3104" Sub="#x0a">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO10" Index="#x3104" Sub="#x0b">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO11" Index="#x3104" Sub="#x0c">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO12" Index="#x3104" Sub="#x0d">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO13" Index="#x3104" Sub="#x0e">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO14" Index="#x3104" Sub="#x0f">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO15" Index="#x3104" Sub="#x10">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Transmit PDO6 Mapping" Index="#x1a05" Flags="#x0010">
+				<Entry Name="DO00" Index="#x3105" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO01" Index="#x3105" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO02" Index="#x3105" Sub="#x03">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO03" Index="#x3105" Sub="#x04">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO04" Index="#x3105" Sub="#x05">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO05" Index="#x3105" Sub="#x06">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO06" Index="#x3105" Sub="#x07">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO07" Index="#x3105" Sub="#x08">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO08" Index="#x3105" Sub="#x09">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO09" Index="#x3105" Sub="#x0a">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO10" Index="#x3105" Sub="#x0b">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO11" Index="#x3105" Sub="#x0c">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO12" Index="#x3105" Sub="#x0d">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO13" Index="#x3105" Sub="#x0e">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO14" Index="#x3105" Sub="#x0f">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO15" Index="#x3105" Sub="#x10">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO16" Index="#x3105" Sub="#x11">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO17" Index="#x3105" Sub="#x12">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO18" Index="#x3105" Sub="#x13">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO19" Index="#x3105" Sub="#x14">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO20" Index="#x3105" Sub="#x15">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO21" Index="#x3105" Sub="#x16">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO22" Index="#x3105" Sub="#x17">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO23" Index="#x3105" Sub="#x18">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO24" Index="#x3105" Sub="#x19">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO25" Index="#x3105" Sub="#x1a">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO26" Index="#x3105" Sub="#x1b">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO27" Index="#x3105" Sub="#x1c">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO28" Index="#x3105" Sub="#x1d">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO29" Index="#x3105" Sub="#x1e">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO30" Index="#x3105" Sub="#x1f">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DO31" Index="#x3105" Sub="#x20">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Transmit PDO1 Safety Mapping" Index="#x1a10" Flags="#x0010">
+				<Entry Name="Command" Index="#x6000" Sub="#x01">
+					<Type>USINT</Type>
+				</Entry>
+				<Entry Name="subindex 001" Index="#x6001" Sub="#x01">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 002" Index="#x6001" Sub="#x02">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 003" Index="#x6001" Sub="#x03">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 004" Index="#x6001" Sub="#x04">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 005" Index="#x6001" Sub="#x05">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 006" Index="#x6001" Sub="#x06">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 007" Index="#x6001" Sub="#x07">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 008" Index="#x6001" Sub="#x08">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 009" Index="#x6001" Sub="#x09">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 010" Index="#x6001" Sub="#x0a">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 011" Index="#x6001" Sub="#x0b">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 012" Index="#x6001" Sub="#x0c">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 013" Index="#x6001" Sub="#x0d">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 014" Index="#x6001" Sub="#x0e">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 015" Index="#x6001" Sub="#x0f">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 016" Index="#x6001" Sub="#x10">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="CRC_0" Index="#x6000" Sub="#x02">
+					<Type>UINT</Type>
+				</Entry>
+				<Entry Name="subindex 017" Index="#x6001" Sub="#x11">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 018" Index="#x6001" Sub="#x12">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 019" Index="#x6001" Sub="#x13">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 020" Index="#x6001" Sub="#x14">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 021" Index="#x6001" Sub="#x15">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 022" Index="#x6001" Sub="#x16">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 023" Index="#x6001" Sub="#x17">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 024" Index="#x6001" Sub="#x18">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 025" Index="#x6001" Sub="#x19">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 026" Index="#x6001" Sub="#x1a">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 027" Index="#x6001" Sub="#x1b">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 028" Index="#x6001" Sub="#x1c">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 029" Index="#x6001" Sub="#x1d">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 030" Index="#x6001" Sub="#x1e">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 031" Index="#x6001" Sub="#x1f">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 032" Index="#x6001" Sub="#x20">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="CRC_1" Index="#x6000" Sub="#x03">
+					<Type>UINT</Type>
+				</Entry>
+				<Entry Name="subindex 033" Index="#x6001" Sub="#x21">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 034" Index="#x6001" Sub="#x22">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 035" Index="#x6001" Sub="#x23">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 036" Index="#x6001" Sub="#x24">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 037" Index="#x6001" Sub="#x25">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 038" Index="#x6001" Sub="#x26">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 039" Index="#x6001" Sub="#x27">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 040" Index="#x6001" Sub="#x28">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 041" Index="#x6001" Sub="#x29">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 042" Index="#x6001" Sub="#x2a">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 043" Index="#x6001" Sub="#x2b">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 044" Index="#x6001" Sub="#x2c">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 045" Index="#x6001" Sub="#x2d">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 046" Index="#x6001" Sub="#x2e">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 047" Index="#x6001" Sub="#x2f">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 048" Index="#x6001" Sub="#x30">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="CRC_2" Index="#x6000" Sub="#x04">
+					<Type>UINT</Type>
+				</Entry>
+				<Entry Name="subindex 049" Index="#x6001" Sub="#x31">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 050" Index="#x6001" Sub="#x32">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 051" Index="#x6001" Sub="#x33">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 052" Index="#x6001" Sub="#x34">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 053" Index="#x6001" Sub="#x35">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 054" Index="#x6001" Sub="#x36">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 055" Index="#x6001" Sub="#x37">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 056" Index="#x6001" Sub="#x38">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 057" Index="#x6001" Sub="#x39">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 058" Index="#x6001" Sub="#x3a">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 059" Index="#x6001" Sub="#x3b">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 060" Index="#x6001" Sub="#x3c">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 061" Index="#x6001" Sub="#x3d">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 062" Index="#x6001" Sub="#x3e">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 063" Index="#x6001" Sub="#x3f">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 064" Index="#x6001" Sub="#x40">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="CRC_3" Index="#x6000" Sub="#x05">
+					<Type>UINT</Type>
+				</Entry>
+				<Entry Name="Connection ID" Index="#x6000" Sub="#x06">
+					<Type>UINT</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Receive PDO1 Mapping" Index="#x1600" InOut="1" Flags="#x0010">
+				<Entry Name="DI00" Index="#x2100" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Receive PDO2 Mapping" Index="#x1601" InOut="1" Flags="#x0010">
+				<Entry Name="DI00" Index="#x2101" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI01" Index="#x2101" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Receive PDO3 Mapping" Index="#x1602" InOut="1" Flags="#x0010" SyncMan="2">
+				<Entry Name="DI00" Index="#x2102" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI01" Index="#x2102" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI02" Index="#x2102" Sub="#x03">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI03" Index="#x2102" Sub="#x04">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Receive PDO4 Mapping" Index="#x1603" InOut="1" Flags="#x0010">
+				<Entry Name="DI00" Index="#x2103" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI01" Index="#x2103" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI02" Index="#x2103" Sub="#x03">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI03" Index="#x2103" Sub="#x04">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI04" Index="#x2103" Sub="#x05">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI05" Index="#x2103" Sub="#x06">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI06" Index="#x2103" Sub="#x07">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI07" Index="#x2103" Sub="#x08">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Receive PDO5 Mapping" Index="#x1604" InOut="1" Flags="#x0010">
+				<Entry Name="DI00" Index="#x2104" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI01" Index="#x2104" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI02" Index="#x2104" Sub="#x03">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI03" Index="#x2104" Sub="#x04">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI04" Index="#x2104" Sub="#x05">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI05" Index="#x2104" Sub="#x06">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI06" Index="#x2104" Sub="#x07">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI07" Index="#x2104" Sub="#x08">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI08" Index="#x2104" Sub="#x09">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI09" Index="#x2104" Sub="#x0a">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI10" Index="#x2104" Sub="#x0b">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI11" Index="#x2104" Sub="#x0c">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI12" Index="#x2104" Sub="#x0d">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI13" Index="#x2104" Sub="#x0e">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI14" Index="#x2104" Sub="#x0f">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI15" Index="#x2104" Sub="#x10">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Receive PDO6 Mapping" Index="#x1605" InOut="1" Flags="#x0010">
+				<Entry Name="DI00" Index="#x2105" Sub="#x01">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI01" Index="#x2105" Sub="#x02">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI02" Index="#x2105" Sub="#x03">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI03" Index="#x2105" Sub="#x04">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI04" Index="#x2105" Sub="#x05">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI05" Index="#x2105" Sub="#x06">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI06" Index="#x2105" Sub="#x07">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI07" Index="#x2105" Sub="#x08">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI08" Index="#x2105" Sub="#x09">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI09" Index="#x2105" Sub="#x0a">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI10" Index="#x2105" Sub="#x0b">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI11" Index="#x2105" Sub="#x0c">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI12" Index="#x2105" Sub="#x0d">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI13" Index="#x2105" Sub="#x0e">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI14" Index="#x2105" Sub="#x0f">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI15" Index="#x2105" Sub="#x10">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI16" Index="#x2105" Sub="#x11">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI17" Index="#x2105" Sub="#x12">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI18" Index="#x2105" Sub="#x13">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI19" Index="#x2105" Sub="#x14">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI20" Index="#x2105" Sub="#x15">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI21" Index="#x2105" Sub="#x16">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI22" Index="#x2105" Sub="#x17">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI23" Index="#x2105" Sub="#x18">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI24" Index="#x2105" Sub="#x19">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI25" Index="#x2105" Sub="#x1a">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI26" Index="#x2105" Sub="#x1b">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI27" Index="#x2105" Sub="#x1c">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI28" Index="#x2105" Sub="#x1d">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI29" Index="#x2105" Sub="#x1e">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI30" Index="#x2105" Sub="#x1f">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+				<Entry Name="DI31" Index="#x2105" Sub="#x20">
+					<Type GUID="{18071995-0000-0000-0000-000300000010}">ARRAY [0..15] OF BYTE</Type>
+				</Entry>
+			</Pdo>
+			<Pdo Name="Receive PDO1 Safety Mapping" Index="#x1610" InOut="1" Flags="#x0010">
+				<Entry Name="Command" Index="#x7000" Sub="#x01">
+					<Type>USINT</Type>
+				</Entry>
+				<Entry Name="subindex 001" Index="#x7001" Sub="#x01">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 002" Index="#x7001" Sub="#x02">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 003" Index="#x7001" Sub="#x03">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 004" Index="#x7001" Sub="#x04">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 005" Index="#x7001" Sub="#x05">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 006" Index="#x7001" Sub="#x06">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 007" Index="#x7001" Sub="#x07">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 008" Index="#x7001" Sub="#x08">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 009" Index="#x7001" Sub="#x09">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 010" Index="#x7001" Sub="#x0a">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 011" Index="#x7001" Sub="#x0b">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 012" Index="#x7001" Sub="#x0c">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 013" Index="#x7001" Sub="#x0d">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 014" Index="#x7001" Sub="#x0e">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 015" Index="#x7001" Sub="#x0f">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 016" Index="#x7001" Sub="#x10">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="CRC_0" Index="#x7000" Sub="#x02">
+					<Type>UINT</Type>
+				</Entry>
+				<Entry Name="subindex 017" Index="#x7001" Sub="#x11">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 018" Index="#x7001" Sub="#x12">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 019" Index="#x7001" Sub="#x13">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 020" Index="#x7001" Sub="#x14">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 021" Index="#x7001" Sub="#x15">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 022" Index="#x7001" Sub="#x16">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 023" Index="#x7001" Sub="#x17">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 024" Index="#x7001" Sub="#x18">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 025" Index="#x7001" Sub="#x19">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 026" Index="#x7001" Sub="#x1a">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 027" Index="#x7001" Sub="#x1b">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 028" Index="#x7001" Sub="#x1c">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 029" Index="#x7001" Sub="#x1d">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 030" Index="#x7001" Sub="#x1e">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 031" Index="#x7001" Sub="#x1f">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 032" Index="#x7001" Sub="#x20">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="CRC_1" Index="#x7000" Sub="#x03">
+					<Type>UINT</Type>
+				</Entry>
+				<Entry Name="subindex 033" Index="#x7001" Sub="#x21">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 034" Index="#x7001" Sub="#x22">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 035" Index="#x7001" Sub="#x23">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 036" Index="#x7001" Sub="#x24">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 037" Index="#x7001" Sub="#x25">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 038" Index="#x7001" Sub="#x26">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 039" Index="#x7001" Sub="#x27">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 040" Index="#x7001" Sub="#x28">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 041" Index="#x7001" Sub="#x29">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 042" Index="#x7001" Sub="#x2a">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 043" Index="#x7001" Sub="#x2b">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 044" Index="#x7001" Sub="#x2c">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 045" Index="#x7001" Sub="#x2d">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 046" Index="#x7001" Sub="#x2e">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 047" Index="#x7001" Sub="#x2f">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 048" Index="#x7001" Sub="#x30">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="CRC_2" Index="#x7000" Sub="#x04">
+					<Type>UINT</Type>
+				</Entry>
+				<Entry Name="subindex 049" Index="#x7001" Sub="#x31">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 050" Index="#x7001" Sub="#x32">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 051" Index="#x7001" Sub="#x33">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 052" Index="#x7001" Sub="#x34">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 053" Index="#x7001" Sub="#x35">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 054" Index="#x7001" Sub="#x36">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 055" Index="#x7001" Sub="#x37">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 056" Index="#x7001" Sub="#x38">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 057" Index="#x7001" Sub="#x39">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 058" Index="#x7001" Sub="#x3a">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 059" Index="#x7001" Sub="#x3b">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 060" Index="#x7001" Sub="#x3c">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 061" Index="#x7001" Sub="#x3d">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 062" Index="#x7001" Sub="#x3e">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 063" Index="#x7001" Sub="#x3f">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="subindex 064" Index="#x7001" Sub="#x40">
+					<Type>BIT</Type>
+				</Entry>
+				<Entry Name="CRC_3" Index="#x7000" Sub="#x05">
+					<Type>UINT</Type>
+				</Entry>
+				<Entry Name="Connection ID" Index="#x7000" Sub="#x06">
+					<Type>UINT</Type>
+				</Entry>
+			</Pdo>
+		</EtherCAT>
+	</Box>
+</TcSmItem>

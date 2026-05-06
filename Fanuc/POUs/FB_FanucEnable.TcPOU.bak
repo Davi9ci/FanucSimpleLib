@@ -1,0 +1,245 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="FB_FanucEnable" Id="{09e0ad2c-e0a6-4bc6-a627-6be54237aea8}" SpecialFunc="None">
+    <Declaration><![CDATA[// Runs the FANUC enable sequence (IMSTP/HOLD/SFSPD → ClearFault → CheckTP → WaitReady → Ready).
+// Validates interlock preconditions before enabling. Set bEnable TRUE to start; toggle FALSE→TRUE to reset after error.
+FUNCTION_BLOCK FB_FanucEnable
+VAR_INPUT
+	bEnable    : BOOL;           // Command: TRUE to run enable sequence
+	stStatus   : ST_FanucStatus; // Live robot status (from FB_FanucStatus)
+	// External interlock signals – Normally Closed convention: TRUE = normal, FALSE = activate stop/hold
+	// May be driven by HMI, safety PLC, or TwinCAT logic. Merged at the call site; this FB sees one value per signal.
+	bExtIMSTP  : BOOL;  // External *IMSTP: FALSE = E-stop requested
+	bExtHold   : BOOL;  // External *HOLD:  FALSE = pause/hold requested
+	bExtSFSPD  : BOOL;  // External *SFSPD: FALSE = safe-speed limit requested
+	bExtStart  : BOOL;  // External Start command: forwarded to robot only when in Ready state
+END_VAR
+VAR_OUTPUT
+	bReady          : BOOL;                // Robot is ready to execute programs
+	bError          : BOOL;                // Enable sequence failed – check eState
+	bTPWarning      : BOOL;                // TP switch is ON – operator action needed
+	eState          : E_FanucEnableState;  // Current state (diagnostic / HMI)
+	stControl       : ST_FanucControl;     // Control outputs – wire to FB_FanucControl
+	// Interlock diagnostics – TRUE when the signal is preventing or has interrupted the enable sequence
+	bInterlockIMSTP : BOOL;  // bExtIMSTP is FALSE (E-stop active)
+	bInterlockHold  : BOOL;  // bExtHold is FALSE (hold active)
+	bInterlockSFSPD : BOOL;  // bExtSFSPD is FALSE (safe-speed / fence open)
+	bInterlockStart : BOOL;  // bExtStart is TRUE (must be FALSE before enabling)
+END_VAR
+VAR
+	_eState          : E_FanucEnableState := E_FanucEnableState.Idle;
+	tonReadyTimeout  : TON;  // Timeout waiting for CMDENBL + SYSRDY (5 s → Error)
+END_VAR
+
+(*
+  FB_FanucEnable
+  Implements the FANUC robot enable sequence as a state machine.
+
+  Sequence (per FANUC UI/UO signal spec):
+    0. Idle       – bEnable must be TRUE and all interlocks in required state before proceeding.
+    1. ClearFault – Waits for bFault = FALSE. Does NOT send a reset pulse; use FB_FanucFaultReset.
+    2. CheckTP    – Wait for bTP_Enabled = FALSE. TP switch must be OFF for remote control.
+    3. WaitReady  – Wait for bCmd_Enabled AND bSystem_Ready (5 s timeout → Error).
+    4. Ready      – bReady = TRUE. Continuously monitors for fault/TP/hold/interlock changes.
+
+  To reset after Error: set bEnable FALSE, then TRUE again.
+
+  Fault clearing:
+    This FB does not send FAULT_RESET. When in ClearFault state, call FB_FanucFaultReset
+    (passing the same stControl instance) and trigger it with bReset. FB_FanucEnable will
+    transition out of ClearFault automatically once bFault = FALSE.
+
+  Interlock preconditions (checked in Idle before starting the sequence):
+    bExtIMSTP must be TRUE  (no E-stop requested)
+    bExtHold  must be TRUE  (no hold requested)
+    bExtSFSPD must be TRUE  (fence closed / no safe-speed requested)
+    bExtStart must be FALSE (no pending start command – prevents an unintended run on entry to Ready)
+    If any condition is not met, the FB stays in Idle and sets the corresponding bInterlock* output.
+    These interlocks are also monitored mid-sequence (ClearFault/CheckTP/WaitReady); loss of any
+    one aborts back to Idle immediately.
+
+  NC signal behaviour (Option A – passive when disabled):
+    When bEnable = FALSE (Idle or Error): IMSTP, HOLD, SFSPD are held TRUE (non-asserting).
+    ENBL = FALSE is the primary gate; additional stop assertions would cause unnecessary alarms.
+    When in any active state: NC signals reflect bExt* inputs directly.
+
+  Emergency Stop (bExtIMSTP = FALSE from Ready/Paused/SafeSpeed):
+    → EmergencyStop. NC signal drops immediately; robot stops. ENBL stays asserted for recovery.
+    No fault-clear while IMSTP is low. When bExtIMSTP returns TRUE → ClearFault.
+
+  Safe Speed (bExtSFSPD = FALSE from Ready/Paused):
+    → SafeSpeed. Robot continues at safe speed; bReady = FALSE.
+    When bExtSFSPD returns TRUE: → Ready (if bExtHold TRUE) or → Paused.
+
+  Pause / Hold (bExtHold = FALSE from Ready):
+    → Paused. Only HOLD is dropped; IMSTP, SFSPD and ENBL remain asserted.
+    When bExtHold returns TRUE → Ready.
+
+  Start (bExtStart):
+    Forwarded to stControl.Start only when in Ready state.
+    Must be FALSE as a precondition to entering the enable sequence.
+
+  Library usage:
+    - Call every PLC cycle.
+    - Pass fbStatus.stStatus into stStatus.
+    - Wire stControl output to FB_FanucControl (inject aDO at call site).
+    - Program start, homing, and cycle-stop bits are not managed here;
+      handle those in the calling application or a dedicated FB.
+*)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* ── NC safety signals ──────────────────────────────────────────────────────────
+   Active states: reflect bExt* inputs directly.
+   Idle / Error (Option A): hold TRUE – non-asserting. ENBL = FALSE is the gate;
+   adding stops on top would cause unnecessary alarms on every disable. *)
+IF _eState <> E_FanucEnableState.Idle AND _eState <> E_FanucEnableState.Error THEN
+	stControl.IMSTP := bExtIMSTP;
+	stControl.Hold  := bExtHold;
+	stControl.SFSPD := bExtSFSPD;
+ELSE
+	stControl.IMSTP := TRUE;
+	stControl.Hold  := TRUE;
+	stControl.SFSPD := TRUE;
+END_IF
+
+(* ── State machine – transition logic only ──────────────────────────────────── *)
+CASE _eState OF
+
+	E_FanucEnableState.Idle:
+		tonReadyTimeout(IN := FALSE);
+		// All interlock preconditions must be met before starting the enable sequence.
+		// bInterlockX outputs (derived below) tell the HMI which signal is blocking.
+		IF bEnable AND bExtIMSTP AND bExtHold AND bExtSFSPD AND NOT bExtStart THEN
+			_eState := E_FanucEnableState.ClearFault;
+		END_IF
+
+	E_FanucEnableState.ClearFault:
+		// Wait for bFault to clear. No pulse is sent here – use FB_FanucFaultReset for that.
+		// Abort back to Idle if bEnable dropped or any interlock was lost mid-sequence.
+		IF NOT bEnable OR NOT bExtIMSTP OR NOT bExtHold OR NOT bExtSFSPD THEN
+			_eState := E_FanucEnableState.Idle;
+		ELSIF NOT stStatus.bFault THEN
+			_eState := E_FanucEnableState.CheckTP;
+		END_IF
+
+	E_FanucEnableState.CheckTP:
+		// bTPWarning is derived below; stay here until operator switches TP off.
+		// Abort if bEnable dropped or any interlock was lost mid-sequence.
+		IF NOT bEnable OR NOT bExtIMSTP OR NOT bExtHold OR NOT bExtSFSPD THEN
+			_eState := E_FanucEnableState.Idle;
+		ELSIF NOT stStatus.bTP_Enabled THEN
+			tonReadyTimeout(IN := FALSE);
+			_eState := E_FanucEnableState.WaitReady;
+		END_IF
+
+	E_FanucEnableState.WaitReady:
+		// Wait for CMDENBL (UO1) and SYSRDY (UO2) to confirm the robot is ready.
+		// Interlock loss takes highest priority – abort cleanly rather than time out.
+		tonReadyTimeout(IN := TRUE, PT := T#5S);
+		IF NOT bEnable OR NOT bExtIMSTP OR NOT bExtHold OR NOT bExtSFSPD THEN
+			tonReadyTimeout(IN := FALSE);
+			_eState := E_FanucEnableState.Idle;
+		ELSIF stStatus.bCmd_Enabled AND stStatus.bSystem_Ready THEN
+			tonReadyTimeout(IN := FALSE);
+			_eState := E_FanucEnableState.Ready;
+		ELSIF stStatus.bTP_Enabled THEN
+			tonReadyTimeout(IN := FALSE);
+			_eState := E_FanucEnableState.CheckTP;
+		ELSIF stStatus.bFault THEN
+			tonReadyTimeout(IN := FALSE);
+			_eState := E_FanucEnableState.ClearFault;
+		ELSIF tonReadyTimeout.Q THEN
+			_eState := E_FanucEnableState.Error;
+		END_IF
+
+	E_FanucEnableState.Ready:
+		// Monitor all conditions (priority: fault > TP > E-stop > SafeSpeed > Hold).
+		IF NOT bEnable THEN
+			_eState := E_FanucEnableState.Idle;
+		ELSIF stStatus.bFault THEN
+			_eState := E_FanucEnableState.ClearFault;
+		ELSIF stStatus.bTP_Enabled THEN
+			_eState := E_FanucEnableState.CheckTP;
+		ELSIF NOT bExtIMSTP THEN
+			_eState := E_FanucEnableState.EmergencyStop;
+		ELSIF NOT bExtSFSPD THEN
+			_eState := E_FanucEnableState.SafeSpeed;
+		ELSIF stStatus.bMotion_Held THEN
+			_eState := E_FanucEnableState.Paused;
+		END_IF
+
+	E_FanucEnableState.Paused:
+		// HOLD NC already low via passthrough. ENBL remains asserted.
+		IF NOT bEnable THEN
+			_eState := E_FanucEnableState.Idle;
+		ELSIF stStatus.bFault THEN
+			_eState := E_FanucEnableState.ClearFault;
+		ELSIF stStatus.bTP_Enabled THEN
+			_eState := E_FanucEnableState.CheckTP;
+		ELSIF NOT bExtIMSTP THEN
+			_eState := E_FanucEnableState.EmergencyStop;
+		ELSIF NOT bExtSFSPD THEN
+			_eState := E_FanucEnableState.SafeSpeed;
+		ELSIF NOT stStatus.bMotion_Held THEN
+			_eState := E_FanucEnableState.Ready;
+		END_IF
+
+	E_FanucEnableState.EmergencyStop:
+		// IMSTP NC already low via passthrough. ENBL stays asserted for recovery.
+		// Do NOT attempt fault-clear while IMSTP is still low.
+		IF NOT bEnable THEN
+			_eState := E_FanucEnableState.Idle;
+		ELSIF stStatus.bTP_Enabled THEN
+			_eState := E_FanucEnableState.CheckTP;
+		ELSIF bExtIMSTP THEN
+			// E-stop released – robot almost certainly alarmed; pass through ClearFault.
+			_eState := E_FanucEnableState.ClearFault;
+		END_IF
+
+	E_FanucEnableState.SafeSpeed:
+		// SFSPD NC already low via passthrough; robot runs at safe speed.
+		IF NOT bEnable THEN
+			_eState := E_FanucEnableState.Idle;
+		ELSIF stStatus.bFault THEN
+			_eState := E_FanucEnableState.ClearFault;
+		ELSIF stStatus.bTP_Enabled THEN
+			_eState := E_FanucEnableState.CheckTP;
+		ELSIF NOT bExtIMSTP THEN
+			_eState := E_FanucEnableState.EmergencyStop;
+		ELSIF bExtSFSPD THEN
+			// Fence closed – resume; honour hold state.
+			IF bExtHold THEN
+				_eState := E_FanucEnableState.Ready;
+			ELSE
+				_eState := E_FanucEnableState.Paused;
+			END_IF
+		END_IF
+
+	E_FanucEnableState.Error:
+		// ENBL de-asserted (derived below). Reset by toggling bEnable FALSE → TRUE.
+		IF NOT bEnable THEN
+			tonReadyTimeout(IN := FALSE);
+			_eState := E_FanucEnableState.Idle;
+		END_IF
+
+ELSE
+	_eState := E_FanucEnableState.Error;
+
+END_CASE
+
+(* ── Derived outputs ─────────────────────────────────────────────────────────────
+   Evaluated after the state machine so they always reflect the current state. *)
+eState             := _eState;
+stControl.Enable   := (_eState <> E_FanucEnableState.Idle)  AND (_eState <> E_FanucEnableState.Error);
+stControl.Start    := (_eState =  E_FanucEnableState.Ready) AND bExtStart;
+bReady             := (_eState =  E_FanucEnableState.Ready);
+bError             := (_eState =  E_FanucEnableState.Error);
+bTPWarning         := (_eState =  E_FanucEnableState.CheckTP) AND stStatus.bTP_Enabled;
+// Interlock diagnostics: TRUE whenever the signal is in a state that blocks or interrupts enabling.
+bInterlockIMSTP    := NOT bExtIMSTP;
+bInterlockHold     := NOT bExtHold;
+bInterlockSFSPD    := NOT bExtSFSPD;
+bInterlockStart    := bExtStart;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
