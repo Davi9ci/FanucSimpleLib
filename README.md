@@ -9,6 +9,7 @@ Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherC
 A pre-compiled TwinCAT library file (`.library`) is available for download. Installing the library is the recommended approach — it does not require copying individual FB source files into your project.
 
 **To install Library:** open TwinCAT XAE → PLC → References → Library repository → install.
+
 **To Add Library:** open TwinCAT XAE → PLC → References → Add Library → browse under Miscellaneous. The FBs, DUTs, and GVLs will be available immediately.
 
 The source files in this repository are the reference implementation. Use them if you need to modify the library or understand the internals.
@@ -129,14 +130,12 @@ Gated by `bReady` — homing only starts when the robot is enabled and ready. Ri
 
 ## Cycle Stop (`FB_FanucCycleStop`)
 
-Sends a 20 ms CSTOPI pulse (UI[4]) to stop the running program. Rising edge on `bTrigger` sends the pulse; `bDone` goes TRUE for one scan when complete.
+Sends a 20 ms CSTOPI pulse (UI[4]) to stop the running program. Rising edge on `bTrigger` triggers the sequence.
 
-The effect on the running program depends on the **"CSTOPI for ABORT"** setting on the controller (MENU → SYSTEM → Config item 6):
+**States:** Idle → Pulsing (20 ms) → Done → Idle.  
+`bBusy` is TRUE while the pulse is active. `bDone` goes TRUE for one scan when complete.
 
-- **DISABLE** – program stops at the end of its current cycle (graceful stop).
-- **ENABLE** – program is immediately aborted at the current line.
-
-This FB sends the pulse unconditionally; the controller setting determines the behaviour.
+This FB sends the pulse unconditionally.
 
 ---
 
@@ -150,9 +149,9 @@ FANUC controller must be configured for RSR mode.
 
 ---
 
-## Output Overwrite (`FB_FanucOverwrite`)
+## Speed Overwrite (`FB_FanucOverwrite`)
 
-Writes a decimal value (0–`nMax`) to `stControl.nDO3`, which `FB_FanucControl` maps to `aDO[3]` (GI[25..33]). Useful for sending integer values such as speed override to the robot controller.
+Writes a decimal value (0–`nMax`) to `stControl.nDO3`, which `FB_FanucControl` maps to `aDO[3]` (GI[25..33]). 
 
 Set `bEnable` TRUE to write `nValue`; FALSE clears the byte to 0.  
 `bError` goes TRUE if `nValue` exceeds `nMax`; default `nMax` = 100.  
