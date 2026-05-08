@@ -6,7 +6,7 @@ Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherC
 
 ## Installation
 
-A pre-compiled TwinCAT library file (`.library`) is available for download. Installing the library is the recommended approach — it does not require copying individual FB source files into your project.
+A pre-compiled TwinCAT library file (`.library`) is available for download. Installing the library is the recommended approach - it does not require copying individual FB source files into your project.
 
 **To install Library:** open TwinCAT XAE → PLC → References → Library repository → install.
 
@@ -47,7 +47,7 @@ The source files in this repository are the reference implementation. Use them i
 
 ## Signal Mapping (FANUC PDO3)
 
-### EtherCAT Inputs → `aDI` (`GVL_Fanuc.DI0`) — Robot UO → PLC
+### EtherCAT Inputs → `aDI` (`GVL_Fanuc.DI0`) - Robot UO → PLC
 
 | Byte | Bit | Signal |
 |---|---|---|
@@ -63,7 +63,7 @@ The source files in this repository are the reference implementation. Use them i
 | | 1 | `UO[10] BUSY`     – controller busy |
 | `aDI[2]` | 0–7 | `UO[11..18]` ACK1..ACK8 (RSR) |
 
-### EtherCAT Outputs → `aDO` (`GVL_Fanuc.DO0`) — PLC → Robot UI
+### EtherCAT Outputs → `aDO` (`GVL_Fanuc.DO0`) - PLC → Robot UI
 
 | Byte | Bit | Signal |
 |---|---|---|
@@ -78,7 +78,7 @@ The source files in this repository are the reference implementation. Use them i
 | `aDO[1]` | 0–7 | `UI[9..16]` RSR1..RSR8 – one-hot program select |
 | `aDO[3]` | 0–7 | GI[25..33] – user-defined output (`stControl.nDO3`) |
 
-> **NC = Normally Closed.** These signals must be held TRUE for the robot to run. Dropping them to FALSE stops or limits the robot — a broken cable fails safe.
+> **NC = Normally Closed.** These signals must be held TRUE for the robot to run. Dropping them to FALSE stops or limits the robot - a broken cable fails safe.
 
 ---
 
@@ -89,8 +89,8 @@ Set `bEnable` to TRUE. The sequence steps through automatically:
 | State | Behaviour |
 |---|---|
 | `Idle` | `bEnable = TRUE` → `ClearFault`. |
-| `ClearFault` | Waits for `bFault = FALSE`. Does not send a reset pulse — use `FB_FanucFaultReset` for that. |
-| `CheckTP` | Waits for TP switch OFF (`bTP_Enabled = FALSE`). `bTPWarning = TRUE` while waiting — wire to HMI indicator. |
+| `ClearFault` | Waits for `bFault = FALSE`. Does not send a reset pulse - use `FB_FanucFaultReset` for that. |
+| `CheckTP` | Waits for TP switch OFF (`bTP_Enabled = FALSE`). `bTPWarning = TRUE` while waiting - wire to HMI indicator. |
 | `WaitReady` | Waits for CMDENBL AND SYSRDY (5 s timeout → Error). |
 | `Ready` | `bReady = TRUE`. Monitors continuously. |
 | `EmergencyStop` | `bExtIMSTP = FALSE`. ENBL stays asserted; returns via ClearFault. |
@@ -124,7 +124,7 @@ Trigger with a rising edge on `bReset`. Typically called from application logic 
 
 Triggers the robot homing macro via a 20 ms HOME pulse (UI[7]) and waits for `bAt_Home` (UO[7]) to confirm completion.
 
-Gated by `bReady` — homing only starts when the robot is enabled and ready. Rising edge on `bStart` begins the sequence. `bDone` goes TRUE for one scan when `bAt_Home` is confirmed (30 s timeout → Error).
+Gated by `bReady` - homing only starts when the robot is enabled and ready. Rising edge on `bStart` begins the sequence. `bDone` goes TRUE for one scan when `bAt_Home` is confirmed (30 s timeout → Error).
 
 ---
 
@@ -222,7 +222,7 @@ No `AT %I*` or `AT %Q*` hardware-linked variables anywhere in the library. The c
 
 ### `stControl` Ownership Pattern
 
-`FB_FanucEnable` owns `stControl` as `VAR_OUTPUT`. It sets IMSTP/HOLD/SFSPD/ENBL and generates the START pulse. Every other FB (`FB_FanucFaultReset`, `FB_FanucHoming`, `FB_FanucCycleStop`, `FB_FanucStartProgram`, `FB_FanucOverwrite`) receives `stControl` as `VAR_IN_OUT` — each writes only its own bit(s) or field and leaves the rest untouched. `FB_FanucControl` is called last and maps the complete struct to `aDO`.
+`FB_FanucEnable` owns `stControl` as `VAR_OUTPUT`. It sets IMSTP/HOLD/SFSPD/ENBL and generates the START pulse. Every other FB (`FB_FanucFaultReset`, `FB_FanucHoming`, `FB_FanucCycleStop`, `FB_FanucStartProgram`, `FB_FanucOverwrite`) receives `stControl` as `VAR_IN_OUT` - each writes only its own bit(s) or field and leaves the rest untouched. `FB_FanucControl` is called last and maps the complete struct to `aDO`.
 
 ### Outputs in the State Machine
 
@@ -236,4 +236,4 @@ No output is scattered across multiple state branches.
 
 ### External Signals
 
-`bExtIMSTP`, `bExtHold`, `bExtSFSPD` and `bExtStart` may be driven by HMI, safety PLC, or TwinCAT logic. Signal arbitration (AND/OR combining) is done at the call site; the FB sees one value per signal. When disabled (Idle / Error) the NC signals are held TRUE (Option A — non-asserting) because `ENBL = FALSE` is the correct gate. Asserting stops on top would cause robot alarms on every disable/enable cycle.
+`bExtIMSTP`, `bExtHold`, `bExtSFSPD` and `bExtStart` may be driven by HMI, safety PLC, or TwinCAT logic. Signal arbitration (AND/OR combining) is done at the call site; the FB sees one value per signal. When disabled (Idle / Error) the NC signals are held TRUE (Option A - non-asserting) because `ENBL = FALSE` is the correct gate. Asserting stops on top would cause robot alarms on every disable/enable cycle.
