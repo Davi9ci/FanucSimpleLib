@@ -10,7 +10,7 @@
   bMotion_Held  : BOOL;  (* bit 4 *)
   bFault      : BOOL;  (* bit 5 *)
   bAt_Home    : BOOL;  (* bit 6 *)
-  bTP_Enabled    : BOOL;  (* bit 7 *)
+  bTP_Enabled    : BOOL;  (* BIT 7 *)
 
   //DI[0,1] - Status Byte 1
   bBatteryAlarm :BOOL; (* bit 1 *)

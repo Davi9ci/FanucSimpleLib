@@ -23,7 +23,11 @@
   Start_Program8    :  BOOL;  //  UI[16] RSR8 / PNS bit 7
 
 //  Control byte 2  (UI[17..18])
+  PNS_Strobe      :  BOOL;
   Prod_Start      :  BOOL;  //  UI[18] PROD_START – triggers PNS program execution
+
+//  Control byte 3  (GI[25..33] – user-defined output)
+  Overwrite            :  BYTE;
 END_STRUCT
 END_TYPE
 ]]></Declaration>

@@ -12,7 +12,7 @@ VAR_INPUT
   bExtIMSTP  : BOOL;  // External *IMSTP: FALSE = E-stop requested
   bExtHold   : BOOL;  // External *HOLD:  FALSE = pause/hold requested
   bExtSFSPD  : BOOL;  // External *SFSPD: FALSE = safe-speed limit requested
-  bExtStart  : BOOL;  // External Start command: forwarded to robot only when in Ready state
+  bExtStart  : BOOL;  // External Start command: rising edge triggers a 20 ms START pulse (Ready state only)
 END_VAR
 VAR_OUTPUT
   bReady          : BOOL;                // Robot is ready to execute programs
@@ -20,15 +20,15 @@ VAR_OUTPUT
   bTPWarning      : BOOL;                // TP switch is ON – operator action needed
   eState          : E_FanucEnableState;  // Current state (diagnostic / HMI)
   stControl       : ST_FanucControl;     // Control outputs – wire to FB_FanucControl
-  // Interlock diagnostics – TRUE when the signal is preventing or has interrupted the enable sequence
-  bInterlockIMSTP : BOOL;  // bExtIMSTP is FALSE (E-stop active)
-  bInterlockHold  : BOOL;  // bExtHold is FALSE (hold active)
-  bInterlockSFSPD : BOOL;  // bExtSFSPD is FALSE (safe-speed / fence open)
-  bInterlockStart : BOOL;  // bExtStart is TRUE (must be FALSE before enabling)
 END_VAR
 VAR
   _eState          : E_FanucEnableState := E_FanucEnableState.Idle;
-  tonReadyTimeout  : TON;  // Timeout waiting for CMDENBL + SYSRDY (5 s → Error)
+  tonReadyTimeout  : TON;   // Timeout waiting for CMDENBL + SYSRDY (5 s → Error)
+  rtExtStart       : R_TRIG;  // Rising-edge detector for bExtStart
+  tonStartPulse    : TON;   // 20 ms START pulse generator
+END_VAR
+VAR CONSTANT
+  tStartPulse : TIME := T#20MS;  // START signal minimum pulse width
 END_VAR
 
 (*
@@ -49,15 +49,6 @@ END_VAR
     (passing the same stControl instance) and trigger it with bReset. FB_FanucEnable will
     transition out of ClearFault automatically once bFault = FALSE.
 
-  Interlock preconditions (checked in Idle before starting the sequence):
-    bExtIMSTP must be TRUE  (no E-stop requested)
-    bExtHold  must be TRUE  (no hold requested)
-    bExtSFSPD must be TRUE  (fence closed / no safe-speed requested)
-    bExtStart must be FALSE (no pending start command – prevents an unintended run on entry to Ready)
-    If any condition is not met, the FB stays in Idle and sets the corresponding bInterlock* output.
-    These interlocks are also monitored mid-sequence (ClearFault/CheckTP/WaitReady); loss of any
-    one aborts back to Idle immediately.
-
   NC signal behaviour (Option A – passive when disabled):
     When bEnable = FALSE (Idle or Error): IMSTP, HOLD, SFSPD are held TRUE (non-asserting).
     ENBL = FALSE is the primary gate; additional stop assertions would cause unnecessary alarms.
@@ -76,8 +67,8 @@ END_VAR
     When bExtHold returns TRUE → Ready.
 
   Start (bExtStart):
-    Forwarded to stControl.Start only when in Ready state.
-    Must be FALSE as a precondition to entering the enable sequence.
+    Rising edge in Ready state triggers a 20 ms pulse on stControl.Start (UI[6]).
+    Must be FALSE before the enable sequence can begin.
 
   Library usage:
     - Call every PLC cycle.
@@ -87,27 +78,17 @@ END_VAR
       handle those in the calling application or a dedicated FB.
 *)]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* ── NC safety signals ──────────────────────────────────────────────────────────
-    Active states: reflect bExt* inputs directly.
-    Idle / Error (Option A): hold TRUE – non-asserting. ENBL = FALSE is the gate;
-    adding stops on top would cause unnecessary alarms on every disable. *)
-IF _eState <> E_FanucEnableState.Idle AND _eState <> E_FanucEnableState.Error THEN
-  stControl.IMSTP := bExtIMSTP;
-  stControl.Hold  := bExtHold;
-  stControl.SFSPD := bExtSFSPD;
-ELSE
-  stControl.IMSTP := TRUE;
-  stControl.Hold  := TRUE;
-  stControl.SFSPD := TRUE;
-END_IF
+      <ST><![CDATA[// ------------------- NC safety signals — always reflect external inputs directly -------------------
+stControl.IMSTP := bExtIMSTP;
+stControl.Hold  := bExtHold;
+stControl.SFSPD := bExtSFSPD;
 
-(* ── State machine – transition logic only ──────────────────────────────────── *)
+// ------------------- State machine – transition logic only -------------------
 CASE _eState OF
 
   E_FanucEnableState.Idle:
     tonReadyTimeout(IN := FALSE);
     // All interlock preconditions must be met before starting the enable sequence.
-    // bInterlockX outputs (derived below) tell the HMI which signal is blocking.
     IF bEnable AND bExtIMSTP AND bExtHold AND bExtSFSPD AND NOT bExtStart THEN
       _eState := E_FanucEnableState.ClearFault;
     END_IF
@@ -226,23 +207,28 @@ ELSE
 
 END_CASE
 
-(* ── Derived outputs ─────────────────────────────────────────────────────────────
-    Evaluated after the state machine so they always reflect the current state. *)
+//-------------------START pulse-------------------
+//  Convert rising edge of bExtStart into a clean 20 ms pulse on stControl.Start.
+//  Gated by Ready state – rising edges in any other state are ignored.
+//  If we leave Ready mid-pulse (e.g. fault occurs), the timer resets cleanly. *)
+rtExtStart(CLK := bExtStart AND (_eState = E_FanucEnableState.Ready));
+tonStartPulse(IN := tonStartPulse.IN OR rtExtStart.Q, PT := tStartPulse);
+IF tonStartPulse.Q THEN
+  tonStartPulse(IN := FALSE);
+END_IF
+IF _eState <> E_FanucEnableState.Ready THEN
+  tonStartPulse(IN := FALSE);
+END_IF
+
+// -------------------Derived outputs-------------------
+// Evaluated after the state machine so they always reflect the current state. *)
 eState             := _eState;
 stControl.Enable   := (_eState <> E_FanucEnableState.Idle)  AND (_eState <> E_FanucEnableState.Error);
-stControl.Start    := (_eState =  E_FanucEnableState.Ready) AND bExtStart;
+stControl.Start    := (_eState =  E_FanucEnableState.Ready) AND tonStartPulse.IN;
 bReady             := (_eState =  E_FanucEnableState.Ready);
 bError             := (_eState =  E_FanucEnableState.Error);
 bTPWarning         := (_eState =  E_FanucEnableState.CheckTP) AND stStatus.bTP_Enabled;
-// Interlock diagnostics: TRUE whenever the signal is in a state that blocks or interrupts enabling.
-bInterlockIMSTP    := NOT bExtIMSTP;
-bInterlockHold     := NOT bExtHold;
-bInterlockSFSPD    := NOT bExtSFSPD;
-bInterlockStart    := bExtStart;
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_FanucEnable">
-      <LineId Id="1" Count="138" />
-    </LineIds>
-</POU>
+  </POU>
 </TcPlcObject>

@@ -1,7 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
   <POU Name="FB_FanucStatus" Id="{df9eb45c-f9bf-0d9c-9783-95f21f1f968c}" SpecialFunc="None">
-    <Declaration><![CDATA[(*
+    <Declaration><![CDATA[//Reads EtherCAT input bytes (aDI) into ST_FanucStatus. Call every scan BEFORE any status-dependent logic. Pass GVL_Fanuc.DI0 at the call site.
+FUNCTION_BLOCK FB_FanucStatus
+VAR_IN_OUT
+  aDI : ARRAY[0..15] OF BYTE; // Injected EtherCAT input array – pass GVL_Fanuc.DI0
+END_VAR
+VAR_OUTPUT
+  stStatus : ST_FanucStatus;
+END_VAR
+
+(*
   FB_FanucStatus
   Reads the raw EtherCAT input byte array (injected as aDI) and maps
   each bit to the corresponding field in ST_FanucStatus.
@@ -17,16 +26,7 @@
     aDI[0]  ← Robot UO[1..8]   (CMDENBL, SYSRDY, PROGRUN, PAUSED, HELD, FAULT, ATPERCH, TPENBL)
     aDI[1]  ← Robot UO[9..10]  (BATALM, BUSY)
     aDI[2]  ← Robot UO[11..18] (ACK1..ACK8 / SNO1..SNO8)
-*)
-{attribute 'documentation' := 'Reads EtherCAT input bytes (aDI) into ST_FanucStatus. Call every scan BEFORE any status-dependent logic. Pass GVL_Fanuc.DI0 at the call site.'}
-FUNCTION_BLOCK FB_FanucStatus
-VAR_IN_OUT
-  aDI : ARRAY[0..15] OF BYTE; // Injected EtherCAT input array – pass GVL_Fanuc.DI0
-END_VAR
-VAR_OUTPUT
-  stStatus : ST_FanucStatus;
-END_VAR
-]]></Declaration>
+*)]]></Declaration>
     <Implementation>
       <ST><![CDATA[
 // Status Byte 0  (aDI[0])  —  UO[1..8]
@@ -54,8 +54,5 @@ stStatus.bProg_Start7ACK := aDI[2].6; // UO[17] ACK7/SNO7
 stStatus.bProg_Start8ACK := aDI[2].7; // UO[18] ACK8/SNO8
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_FanucStatus">
-      <LineId Id="1" Count="20" />
-    </LineIds>
-</POU>
+  </POU>
 </TcPlcObject>

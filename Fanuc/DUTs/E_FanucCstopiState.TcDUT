@@ -3,17 +3,13 @@
   <DUT Name="E_FanucCstopiState" Id="{c3d4e5f6-a7b8-9012-cdef-012345678902}">
     <Declaration><![CDATA[(*
   States for FB_FanucCycleStop.
-  Sequence: Idle → Pulsing → Done (→ Idle)  [Standard mode]
-            Idle → Pulsing → WaitStop → Done (→ Idle)  [Abort mode]
-  Error on timeout in WaitStop; reset by setting bTrigger FALSE.
+  Sequence: Idle → Pulsing → Done (→ Idle)
 *)
 TYPE E_FanucCstopiState :
 (
-	Idle     := 0,   // Waiting for bTrigger rising edge.
-	Pulsing  := 1,   // CSTOPI signal pulsed for 20 ms.
-	WaitStop := 2,   // Abort mode only: waiting for bPrg_Running = FALSE (timeout → Error).
-	Done     := 3,   // Cycle stop complete – bDone TRUE for one scan, then → Idle.
-	Error    := 99   // Abort mode: program did not stop in time. Set bTrigger FALSE to reset.
+	Idle    := 0,   // Waiting for bTrigger rising edge.
+	Pulsing := 1,   // CSTOPI signal pulsed for 20 ms.
+	Done    := 2    // Cycle stop complete – bDone TRUE for one scan, then → Idle.
 );
 END_TYPE
 ]]></Declaration>

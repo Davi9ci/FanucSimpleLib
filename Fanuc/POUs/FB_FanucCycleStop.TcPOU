@@ -1,103 +1,68 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
   <POU Name="FB_FanucCycleStop" Id="{d5a33dbe-22de-9816-1841-daac460200c0}" SpecialFunc="None">
     <Declaration><![CDATA[// Sends the CSTOPI (UI[4]) Cycle Stop signal to the FANUC robot.
-// Set eMode to match the FANUC system setting: MENU → SYSTEM → Config → "CSTOPI for ABORT".
-// Rising edge on bTrigger sends a 20 ms pulse. In Abort mode, bBusy stays TRUE until the
-// running program stops (bPrg_Running = FALSE) or the timeout expires.
-// Set bTrigger FALSE to reset after Error.
+// Rising edge on bTrigger sends a 20 ms pulse; bDone goes TRUE for one scan when complete.
 FUNCTION_BLOCK FB_FanucCycleStop
 VAR_INPUT
-  bTrigger   : BOOL;               // Rising edge: send Cycle Stop command
-  eMode      : E_FanucCstopiMode;  // Must match FANUC "CSTOPI for ABORT" system setting
-  stStatus   : ST_FanucStatus;     // Live robot status (used in Abort mode to confirm stop)
+  bTrigger   : BOOL;   // Rising edge: send Cycle Stop command
 END_VAR
 VAR_IN_OUT
-  stControl  : ST_FanucControl;    // Control struct – wire same instance as FB_FanucEnable output
+  stControl  : ST_FanucControl;   // Control struct – wire same instance as FB_FanucEnable output
 END_VAR
 VAR_OUTPUT
-  bBusy      : BOOL;                  // TRUE while pulse active or (Abort mode) waiting for program to stop
-  bDone      : BOOL;                  // One scan TRUE when cycle stop is complete
-  bError     : BOOL;                  // Abort mode only: program did not stop within tTimeout
-  eState     : E_FanucCstopiState;    // Current state (diagnostic / HMI)
+  bBusy      : BOOL;               // TRUE while pulse is active
+  bDone      : BOOL;               // One scan TRUE when cycle stop pulse is complete
+  eState     : E_FanucCstopiState; // Current state (diagnostic / HMI)
 END_VAR
 VAR
-  _eState     : E_FanucCstopiState := E_FanucCstopiState.Idle;
-  rtTrigger   : R_TRIG;
-  tonPulse    : TON;   // 20 ms CSTOPI pulse width
-  tonTimeout  : TON;   // Abort mode: max wait for bPrg_Running to go FALSE
+  _eState   : E_FanucCstopiState := E_FanucCstopiState.Idle;
+  rtTrigger : R_TRIG;
+  tonPulse  : TON;   // 20 ms CSTOPI pulse width
 END_VAR
 VAR CONSTANT
-  tPulse   : TIME := T#20MS;   // CSTOPI minimum pulse width (spec: ≥15 ms)
-  tTimeout : TIME := T#10S;    // Abort mode: timeout waiting for program stop
+  tPulse : TIME := T#20MS;   // CSTOPI minimum pulse width (spec: ≥15 ms)
 END_VAR
 
 (*
   FB_FanucCycleStop
-  Controls the CSTOPI UI[4] signal per the FANUC UOP specification.
+  Sends a 20 ms CSTOPI pulse (UI[4]) to the FANUC robot.
 
-  Signal behaviour (FANUC datasheet):
-    CSTOPI clears programs waiting on RSR and, depending on the system setting
-    "CSTOPI for ABORT" (MENU → SYSTEM → Config item 6), either:
-
-    Standard mode (CSTOPI for ABORT = DISABLE):
-      The currently running program continues executing and stops at the end of
-      its current cycle. Use this for a graceful, coordinated stop.
-
-    Abort mode (CSTOPI for ABORT = ENABLE):
-      The currently running program is immediately halted at the current line.
-      The robot stops in-place. Ensure it is safe to interrupt mid-cycle.
+  CSTOPI clears programs waiting on RSR. The effect on the running program depends
+  on the "CSTOPI for ABORT" setting on the controller (MENU → SYSTEM → Config item 6):
+    DISABLE – program stops at the end of its current cycle (graceful stop).
+    ENABLE  – program is immediately aborted at the current line.
+  This FB sends the pulse unconditionally; the controller setting determines the behaviour.
 
   Usage:
     - Call every PLC cycle.
     - Pass the same stControl instance used by FB_FanucEnable and FB_FanucControl.
-    - Set eMode to match the controller's "CSTOPI for ABORT" system setting.
     - Give bTrigger a rising edge to issue the command.
-    - Monitor bBusy / bDone for completion handshaking.
-    - In Standard mode bDone goes TRUE as soon as the 20 ms pulse ends.
-    - In Abort mode bDone goes TRUE once bPrg_Running goes FALSE.
-    - bError (Abort mode only) goes TRUE if the program has not stopped within tTimeout.
+    - bDone goes TRUE for one scan when the 20 ms pulse is complete.
 *)
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// ── Edge detect ───────────────────────────────────────────────────────────────
+      <ST><![CDATA[// ---------- Edge detect ----------
 rtTrigger(CLK := bTrigger);
 
-// ── State machine ─────────────────────────────────────────────────────────────
+// ---------- State machine ----------
 CASE _eState OF
 
   E_FanucCstopiState.Idle:
     stControl.Cycle_stop := FALSE;
     tonPulse(IN := FALSE);
-    tonTimeout(IN := FALSE);
     IF rtTrigger.Q THEN
       _eState := E_FanucCstopiState.Pulsing;
     END_IF
 
   E_FanucCstopiState.Pulsing:
-    // Assert CSTOPI for 20 ms to trigger cycle stop on the robot.
+    // Assert CSTOPI for 20 ms, then → Done.
     tonPulse(IN := TRUE, PT := tPulse);
     stControl.Cycle_stop := NOT tonPulse.Q;  // TRUE for first 20 ms, then FALSE
     IF tonPulse.Q THEN
       stControl.Cycle_stop := FALSE;
       tonPulse(IN := FALSE);
-      IF eMode = E_FanucCstopiMode.Abort THEN
-        _eState := E_FanucCstopiState.WaitStop;
-      ELSE
-        _eState := E_FanucCstopiState.Done;
-      END_IF
-    END_IF
-
-  E_FanucCstopiState.WaitStop:
-    // Abort mode only: wait for the robot to confirm the program has stopped.
-    stControl.Cycle_stop := FALSE;
-    tonTimeout(IN := TRUE, PT := tTimeout);
-    IF NOT stStatus.bPrg_Running THEN
-      tonTimeout(IN := FALSE);
       _eState := E_FanucCstopiState.Done;
-    ELSIF tonTimeout.Q THEN
-      tonTimeout(IN := FALSE);
-      _eState := E_FanucCstopiState.Error;
     END_IF
 
   E_FanucCstopiState.Done:
@@ -105,28 +70,16 @@ CASE _eState OF
     stControl.Cycle_stop := FALSE;
     _eState := E_FanucCstopiState.Idle;
 
-  E_FanucCstopiState.Error:
-    // Abort mode: program did not stop within tTimeout.
-    // Set bTrigger FALSE to reset.
-    stControl.Cycle_stop := FALSE;
-    IF NOT bTrigger THEN
-      _eState := E_FanucCstopiState.Idle;
-    END_IF
-
 ELSE
-  _eState := E_FanucCstopiState.Error;
+  _eState := E_FanucCstopiState.Idle;
 
 END_CASE
 
-// ── Derived outputs ───────────────────────────────────────────────────────────
+// ---------- Derived outputs ----------
 eState := _eState;
-bBusy  := (_eState = E_FanucCstopiState.Pulsing) OR (_eState = E_FanucCstopiState.WaitStop);
+bBusy  := (_eState = E_FanucCstopiState.Pulsing);
 bDone  := (_eState = E_FanucCstopiState.Done);
-bError := (_eState = E_FanucCstopiState.Error);
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_FanucCycleStop">
-      <LineId Id="1" Count="43" />
-    </LineIds>
-</POU>
+  </POU>
 </TcPlcObject>

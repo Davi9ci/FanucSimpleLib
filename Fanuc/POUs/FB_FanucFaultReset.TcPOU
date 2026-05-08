@@ -102,15 +102,12 @@ ELSE
 
 END_CASE
 
-(* ── Derived outputs ─────────────────────────────────────────────────────────── *)
+// ---------- Derived outputs ---------- *)
 eState := _eState;
 bBusy  := (_eState = E_FanucFaultResetState.SendPulse) OR (_eState = E_FanucFaultResetState.WaitClear);
 bDone  := (_eState = E_FanucFaultResetState.Done);
 bError := (_eState = E_FanucFaultResetState.Error);
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_FanucFaultReset">
-      <LineId Id="1" Count="47" />
-    </LineIds>
-</POU>
+  </POU>
 </TcPlcObject>

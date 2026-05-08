@@ -1,6 +1,16 @@
 # FANUC R-30iB Plus – TwinCAT EtherCAT Library
 
-Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherCAT using the FANUC EtherCAT Slave option (R-30iB Plus, PDO3 mapping). Handles the full enable sequence, interlock validation, safety signal management, fault reset, homing, cycle stop, and program start in both RSR and PNS modes.
+Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherCAT using the FANUC EtherCAT Slave option (R-30iB Plus, PDO3 mapping). Handles the full enable sequence, interlock validation, safety signal management, fault reset, homing, cycle stop, program start (RSR), and user-defined output overwrite.
+
+---
+
+## Installation
+
+A pre-compiled TwinCAT library file (`.library`) is available for download. Installing the library is the recommended approach — it does not require copying individual FB source files into your project.
+
+**To install:** open TwinCAT XAE → PLC → References → Add Library → browse to the `.library` file. The FBs, DUTs, and GVLs will be available immediately.
+
+The source files in this repository are the reference implementation. Use them if you need to modify the library or understand the internals.
 
 ---
 
@@ -15,20 +25,21 @@ Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherC
 | `E_FanucEnableState` | State enum for `FB_FanucEnable` |
 | `E_FanucFaultResetState` | State enum for `FB_FanucFaultReset` |
 | `E_FanucHomingState` | State enum for `FB_FanucHoming` |
-| `E_FanucCstopiMode` | Cycle-stop mode selector (Standard / Abort) |
-| `E_FanucStartMode` | RSR or PNS program start mode selector |
+| `E_FanucCstopiState` | State enum for `FB_FanucCycleStop` |
+| `E_FanucStartProgramState` | State enum for `FB_FanucStartProgram` |
 
 ### Function Blocks (POUs)
 
 | Name | Description |
 |---|---|
 | `FB_FanucStatus` | Reads aDI byte array → `ST_FanucStatus` |
-| `FB_FanucControl` | Writes `ST_FanucControl` → aDO byte array |
+| `FB_FanucControl` | Writes `ST_FanucControl` → aDO byte array (bytes 0–3) |
 | `FB_FanucEnable` | Enable sequence + interlock validation + safety signals |
 | `FB_FanucFaultReset` | Fault reset pulse (FAULT_RESET UI[5]) with confirmation |
 | `FB_FanucHoming` | Homing sequence (HOME UI[7]) with completion detection |
-| `FB_FanucCycleStop` | Cycle stop (CSTOPI UI[4]) in Standard or Abort mode |
-| `FB_FanucStartProgram` | Program start in RSR or PNS mode with ACK detection |
+| `FB_FanucCycleStop` | Cycle stop – 20 ms CSTOPI pulse (UI[4]) |
+| `FB_FanucStartProgram` | Program start in RSR mode (programs 1..8) with ACK detection |
+| `FB_FanucOverwrite` | Writes a decimal value (0–255) to `stControl.nDO3` (GI[25..33]) |
 
 ---
 
@@ -48,7 +59,7 @@ Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherC
 | | 7 | `UO[8]  TPENBL`   – teach pendant switch ON |
 | `aDI[1]` | 0 | `UO[9]  BATALM`   – battery alarm |
 | | 1 | `UO[10] BUSY`     – controller busy |
-| `aDI[2]` | 0–7 | `UO[11..18]` ACK1..ACK8 (RSR) / SNO1..SNO8 (PNS) |
+| `aDI[2]` | 0–7 | `UO[11..18]` ACK1..ACK8 (RSR) |
 
 ### EtherCAT Outputs → `aDO` (`GVL_Fanuc.DO0`) — PLC → Robot UI
 
@@ -57,13 +68,13 @@ Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherC
 | `aDO[0]` | 0 | `UI[1]  *IMSTP`      NC – FALSE = emergency stop |
 | | 1 | `UI[2]  *HOLD`       NC – FALSE = pause robot |
 | | 2 | `UI[3]  *SFSPD`      NC – FALSE = safe-speed limit |
-| | 3 | `UI[4]  CSTOPI`         – pulse to abort cycle |
+| | 3 | `UI[4]  CSTOPI`         – pulse to stop cycle |
 | | 4 | `UI[5]  FAULT_RESET`    – pulse to clear alarms |
-| | 5 | `UI[6]  START`          – start / resume program |
-| | 6 | `UI[7]  HOME`           – trigger homing macro |
+| | 5 | `UI[6]  START`          – 20 ms pulse to start/resume |
+| | 6 | `UI[7]  HOME`           – pulse to trigger homing |
 | | 7 | `UI[8]  ENBL`        NC – FALSE = disable motion |
-| `aDO[1]` | 0–7 | `UI[9..16]` RSR1..RSR8 (RSR) / PNS1..PNS8 (PNS) |
-| `aDO[2]` | 1 | `UI[18] PROD_START`  – triggers PNS execution |
+| `aDO[1]` | 0–7 | `UI[9..16]` RSR1..RSR8 – one-hot program select |
+| `aDO[3]` | 0–7 | GI[25..33] – user-defined output (`stControl.nDO3`) |
 
 > **NC = Normally Closed.** These signals must be held TRUE for the robot to run. Dropping them to FALSE stops or limits the robot — a broken cable fails safe.
 
@@ -75,7 +86,7 @@ Set `bEnable` to TRUE. All interlock preconditions must be met before the FB tra
 
 | State | Behaviour |
 |---|---|
-| `Idle` | `bEnable = TRUE` AND all interlock preconditions met → `ClearFault`. `bInterlockX` outputs indicate which signal is blocking (HMI use). |
+| `Idle` | `bEnable = TRUE` AND all interlock preconditions met → `ClearFault`. |
 | `ClearFault` | Waits for `bFault = FALSE`. Does not send a reset pulse — use `FB_FanucFaultReset` for that. Aborts to Idle on interlock loss. |
 | `CheckTP` | Waits for TP switch OFF (`bTP_Enabled = FALSE`). `bTPWarning = TRUE` while waiting — wire to HMI indicator. |
 | `WaitReady` | Waits for CMDENBL AND SYSRDY (5 s timeout → Error). |
@@ -98,7 +109,9 @@ Checked in Idle before starting the sequence and monitored mid-sequence in Clear
 
 IMSTP, HOLD and SFSPD are held TRUE (non-asserting, Option A). ENBL = FALSE is the primary gate; asserting stops on top causes alarms. When in any active state the signals follow `bExt*` inputs directly.
 
-`bExtStart` is forwarded to `stControl.Start` only when in the Ready state. It is a precondition that `bExtStart = FALSE` before enabling.
+### Start Signal
+
+Rising edge on `bExtStart` triggers a 20 ms pulse on `stControl.Start` (UI[6]), only when in Ready state. `bExtStart` must be FALSE before the enable sequence can begin.
 
 ---
 
@@ -124,30 +137,34 @@ Gated by `bReady` — homing only starts when the robot is enabled and ready. Ri
 
 ## Cycle Stop (`FB_FanucCycleStop`)
 
-Sends a CSTOPI pulse (UI[4]) to stop the running program.
+Sends a 20 ms CSTOPI pulse (UI[4]) to stop the running program. Rising edge on `bTrigger` sends the pulse; `bDone` goes TRUE for one scan when complete.
 
-Set `eCstopiMode` to match the FANUC controller "CSTOPI for ABORT" setting:
+The effect on the running program depends on the **"CSTOPI for ABORT"** setting on the controller (MENU → SYSTEM → Config item 6):
 
-| Mode | Behaviour |
-|---|---|
-| `Standard` | 20 ms pulse; `bDone` goes TRUE immediately after the pulse. |
-| `Abort` | 20 ms pulse; `bDone` waits until PROGRUN = FALSE (program stopped). |
+- **DISABLE** – program stops at the end of its current cycle (graceful stop).
+- **ENABLE** – program is immediately aborted at the current line.
 
-Rising edge on `bTrigger` sends the pulse.
+This FB sends the pulse unconditionally; the controller setting determines the behaviour.
 
 ---
 
 ## Program Start (`FB_FanucStartProgram`)
 
-### RSR Mode (`eMode = E_FanucStartMode.RSR`)
+Starts programs 1–8 in RSR mode. `nProgram` maps to a one-hot 200 ms pulse on RSR1..RSR8 (UI[9..16]). The robot acknowledges on the matching ACK bit (UO[11..18]); `bAck` goes TRUE for one scan on confirmation.
 
-Programs 1–8. Each maps to one RSR bit (UI[9..16]), pulsed for 200 ms. Robot acknowledges on ACK bits (UO[11..18]) → `fbStart.bAck` TRUE one scan. FANUC controller must be configured for RSR mode.
+Gated by `bReady`. Rising edge on `bStart` triggers the sequence.  
+`bError` latches if `nProgram` is out of range (1..8); set `bStart` FALSE to reset.  
+FANUC controller must be configured for RSR mode.
 
-### PNS Mode (`eMode = E_FanucStartMode.PNS`)
+---
 
-Programs 1–255. Binary-encoded across PNS bits (UI[9..16]). PROD_START (UI[18]) is pulsed simultaneously for 200 ms. Robot acknowledges via PROGRUN rising edge → `fbStart.bAck` TRUE one scan. FANUC controller must be configured for PNS mode.
+## Output Overwrite (`FB_FanucOverwrite`)
 
-> RSR and PNS are mutually exclusive — configured on the robot controller, not switchable at runtime. Set `eStartMode` to match the controller config.
+Writes a decimal value (0–`nMax`) to `stControl.nDO3`, which `FB_FanucControl` maps to `aDO[3]` (GI[25..33]). Useful for sending integer values such as speed override to the robot controller.
+
+Set `bEnable` TRUE to write `nValue`; FALSE clears the byte to 0.  
+`bError` goes TRUE if `nValue` exceeds `nMax`; default `nMax` = 100.  
+Must be called **before** `fbControl` in MAIN so the value is included in the final write.
 
 ---
 
@@ -167,27 +184,24 @@ fbEnable(
     bExtStart := bExtStart,   // Wire from: HMI start button
     stControl => stControl);
 
-// 3. Program start (VAR_IN_OUT stamps start bits into stControl)
-fbStart(
-    bStart    := bStartProgram,
-    nProgram  := nProgram,
-    eMode     := eStartMode,
-    bReady    := fbEnable.bReady,
-    stStatus  := stStatus,
-    stControl := stControl);
-
-// 4. Cycle stop
-fbCycleStop(
-    bTrigger  := bCycleStop,
-    eMode     := eCstopiMode,
-    stStatus  := stStatus,
-    stControl := stControl);
-
-// 5. Homing
+// 3. Homing
 fbHoming(
     bStart    := bStartHome,
     bReady    := fbEnable.bReady,
     stStatus  := stStatus,
+    stControl := stControl);
+
+// 4. Program start
+fbStartProgram(
+    bStart    := bStartProgram,
+    nProgram  := nProgram,
+    bReady    := fbEnable.bReady,
+    stStatus  := stStatus,
+    stControl := stControl);
+
+// 5. Cycle stop
+fbCycleStop(
+    bTrigger  := bCycleStop,
     stControl := stControl);
 
 // 6. Fault reset (call when fbEnable.eState = ClearFault and operator requests)
@@ -196,7 +210,14 @@ fbFaultReset(
     stStatus  := stStatus,
     stControl := stControl);
 
-// 7. Write outputs – always last
+// 7. Output overwrite (e.g. speed override to GI[25..33])
+fbOverwrite(
+    nValue    := byOverwrite,
+    bEnable   := TRUE,
+    nMax      := 100,
+    stControl := stControl);
+
+// 8. Write outputs – always last
 fbControl(aDO := GVL_Fanuc.DO0, stControl := stControl);
 ```
 
@@ -210,11 +231,11 @@ No `AT %I*` or `AT %Q*` hardware-linked variables anywhere in the library. The c
 
 ### `stControl` Ownership Pattern
 
-`FB_FanucEnable` owns `stControl` as `VAR_OUTPUT`. It sets IMSTP/HOLD/SFSPD/ENBL/START and clears all other bits on every scan. Every other FB (`FB_FanucFaultReset`, `FB_FanucHoming`, `FB_FanucCycleStop`, `FB_FanucStartProgram`) receives `stControl` as `VAR_IN_OUT` — they each write only their own bit(s) and leave the rest untouched. The calling program passes `fbEnable.stControl` to each of these FBs in turn.
+`FB_FanucEnable` owns `stControl` as `VAR_OUTPUT`. It sets IMSTP/HOLD/SFSPD/ENBL and generates the START pulse. Every other FB (`FB_FanucFaultReset`, `FB_FanucHoming`, `FB_FanucCycleStop`, `FB_FanucStartProgram`, `FB_FanucOverwrite`) receives `stControl` as `VAR_IN_OUT` — each writes only its own bit(s) or field and leaves the rest untouched. `FB_FanucControl` is called last and maps the complete struct to `aDO`.
 
 ### Outputs in the State Machine
 
-Each FB's outputs (`bReady`, `bError`, `bDone`, `bBusy`, etc.) are derived after the state machine as simple expressions of the current state, e.g.:
+Each FB's outputs (`bReady`, `bError`, `bDone`, `bBusy`, `eState`, etc.) are derived after the state machine as simple expressions of the current state, e.g.:
 
 ```pascal
 bReady := (_eState = E_FanucEnableState.Ready);

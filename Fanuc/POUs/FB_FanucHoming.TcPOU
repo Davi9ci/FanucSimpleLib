@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
   <POU Name="FB_FanucHoming" Id="{d5b90ddc-612f-021f-8e89-4af80ef73b07}" SpecialFunc="None">
     <Declaration><![CDATA[// Executes the FANUC robot homing sequence via HOME (UI[7]).
@@ -26,7 +26,7 @@ VAR
   tonWaitComplete : TON;   // Timeout waiting for bAt_Home (configurable via tHomingTimeout)
 END_VAR
 VAR CONSTANT
-  tHomePulse    : TIME := T#20MS;  // HOME signal minimum pulse width
+  tHomePulse    : TIME := T#200MS;  // HOME signal minimum pulse width
   tHomingTimeout : TIME := T#30S; // Max time allowed for homing macro to complete
 END_VAR
 
@@ -65,10 +65,10 @@ END_VAR
 *)
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// ── Edge detect (gated by bReady interlock) ───────────────────────────────────
+      <ST><![CDATA[// ---------- Edge detect ----------
 rtStart(CLK := bStart AND bReady);
 
-// ── State machine ─────────────────────────────────────────────────────────────
+// ---------- State machine ----------
 CASE _eState OF
 
   E_FanucHomingState.Idle:
@@ -120,15 +120,12 @@ ELSE
 
 END_CASE
 
-// ── Derived outputs ───────────────────────────────────────────────────────────
+// ---------- Derived outputs ----------
 eState := _eState;
 bBusy  := (_eState = E_FanucHomingState.RequestHome) OR (_eState = E_FanucHomingState.WaitComplete);
 bDone  := (_eState = E_FanucHomingState.Done);
 bError := (_eState = E_FanucHomingState.Error);
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_FanucHoming">
-      <LineId Id="1" Count="52" />
-    </LineIds>
-</POU>
+  </POU>
 </TcPlcObject>

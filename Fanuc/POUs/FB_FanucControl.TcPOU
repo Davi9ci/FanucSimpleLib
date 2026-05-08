@@ -35,12 +35,12 @@ aDO[1].6 := stControl.Start_Program7; // UI[15] RSR7 / PNS bit 6
 aDO[1].7 := stControl.Start_Program8; // UI[16] RSR8 / PNS bit 7
 
 // Control Byte 2  (aDO[2])  —  UI[17..18]
-aDO[2].0 := FALSE;                   // UI[17] reserved
+aDO[2].0 := stControl.PNS_Strobe;                   // UI[17] reserved
 aDO[2].1 := stControl.Prod_Start;   // UI[18] PROD_START – triggers PNS program execution
+
+// Control Byte 3  (aDO[3])  —  GI[25..33] user-defined output
+aDO[3] := stControl.Overwrite;
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_FanucControl">
-      <LineId Id="1" Count="20" />
-    </LineIds>
-</POU>
+  </POU>
 </TcPlcObject>
