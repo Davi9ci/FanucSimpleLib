@@ -1,6 +1,6 @@
 # FANUC R-30iB Plus – TwinCAT EtherCAT Library
 
-Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherCAT using the FANUC EtherCAT Slave option (R-30iB Plus, PDO3 mapping). Handles the full enable sequence, interlock validation, safety signal management, fault reset, homing, cycle stop, program start (RSR), and user-defined output overwrite.
+Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherCAT using the FANUC EtherCAT Slave option (R-30iB Plus, PDO3 mapping). Handles the full enable sequence, safety signal management, fault reset, homing, cycle stop, program start (RSR), and user-defined output overwrite.
 
 ---
 
@@ -8,7 +8,8 @@ Ready-made function blocks for controlling a FANUC R-30iB Plus robot over EtherC
 
 A pre-compiled TwinCAT library file (`.library`) is available for download. Installing the library is the recommended approach — it does not require copying individual FB source files into your project.
 
-**To install:** open TwinCAT XAE → PLC → References → Add Library → browse to the `.library` file. The FBs, DUTs, and GVLs will be available immediately.
+**To install Library:** open TwinCAT XAE → PLC → References → Library repository → install.
+**To Add Library:** open TwinCAT XAE → PLC → References → Add Library → browse under Miscellaneous. The FBs, DUTs, and GVLs will be available immediately.
 
 The source files in this repository are the reference implementation. Use them if you need to modify the library or understand the internals.
 
@@ -34,7 +35,7 @@ The source files in this repository are the reference implementation. Use them i
 |---|---|
 | `FB_FanucStatus` | Reads aDI byte array → `ST_FanucStatus` |
 | `FB_FanucControl` | Writes `ST_FanucControl` → aDO byte array (bytes 0–3) |
-| `FB_FanucEnable` | Enable sequence + interlock validation + safety signals |
+| `FB_FanucEnable` | Enable sequence + safety signal management |
 | `FB_FanucFaultReset` | Fault reset pulse (FAULT_RESET UI[5]) with confirmation |
 | `FB_FanucHoming` | Homing sequence (HOME UI[7]) with completion detection |
 | `FB_FanucCycleStop` | Cycle stop – 20 ms CSTOPI pulse (UI[4]) |
@@ -82,12 +83,12 @@ The source files in this repository are the reference implementation. Use them i
 
 ## Enable Sequence (`FB_FanucEnable`)
 
-Set `bEnable` to TRUE. All interlock preconditions must be met before the FB transitions out of Idle. The sequence then steps through automatically:
+Set `bEnable` to TRUE. The sequence steps through automatically:
 
 | State | Behaviour |
 |---|---|
-| `Idle` | `bEnable = TRUE` AND all interlock preconditions met → `ClearFault`. |
-| `ClearFault` | Waits for `bFault = FALSE`. Does not send a reset pulse — use `FB_FanucFaultReset` for that. Aborts to Idle on interlock loss. |
+| `Idle` | `bEnable = TRUE` → `ClearFault`. |
+| `ClearFault` | Waits for `bFault = FALSE`. Does not send a reset pulse — use `FB_FanucFaultReset` for that. |
 | `CheckTP` | Waits for TP switch OFF (`bTP_Enabled = FALSE`). `bTPWarning = TRUE` while waiting — wire to HMI indicator. |
 | `WaitReady` | Waits for CMDENBL AND SYSRDY (5 s timeout → Error). |
 | `Ready` | `bReady = TRUE`. Monitors continuously. |
@@ -95,15 +96,6 @@ Set `bEnable` to TRUE. All interlock preconditions must be met before the FB tra
 | `SafeSpeed` | `bExtSFSPD = FALSE`. Robot runs at safe speed; `bReady = FALSE`. |
 | `Paused` | `bMotion_Held` confirmed. HOLD dropped; ENBL stays asserted. |
 | `Error` | Timeout in WaitReady. Toggle `bEnable` FALSE → TRUE to reset. |
-
-### Interlock Preconditions
-
-Checked in Idle before starting the sequence and monitored mid-sequence in ClearFault / CheckTP / WaitReady:
-
-- `bExtIMSTP` must be TRUE – no E-stop requested
-- `bExtHold`  must be TRUE – no hold/pause requested
-- `bExtSFSPD` must be TRUE – fence closed, no safe-speed requested
-- `bExtStart` must be FALSE – no pending start command
 
 ### NC Signal Behaviour When Disabled (Idle / Error)
 
@@ -243,6 +235,6 @@ bReady := (_eState = E_FanucEnableState.Ready);
 
 No output is scattered across multiple state branches.
 
-### Interlock Signals
+### External Signals
 
 `bExtIMSTP`, `bExtHold`, `bExtSFSPD` and `bExtStart` may be driven by HMI, safety PLC, or TwinCAT logic. Signal arbitration (AND/OR combining) is done at the call site; the FB sees one value per signal. When disabled (Idle / Error) the NC signals are held TRUE (Option A — non-asserting) because `ENBL = FALSE` is the correct gate. Asserting stops on top would cause robot alarms on every disable/enable cycle.

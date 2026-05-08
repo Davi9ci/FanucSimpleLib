@@ -16,6 +16,7 @@
     <Implicit_KindOfTask>{a36841cd-3a41-41e2-b2c3-214ad45b11a7}</Implicit_KindOfTask>
     <Implicit_Jitter_Distribution>{7d758eb6-5523-43b1-a08b-ca263c92fe27}</Implicit_Jitter_Distribution>
     <LibraryReferences>{d177917f-3cd3-4f8b-8525-10fc0295e86d}</LibraryReferences>
+    <Released>false</Released>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DUTs\E_FanucCstopiState.TcDUT">
@@ -81,10 +82,6 @@
     <Folder Include="POUs" />
   </ItemGroup>
   <ItemGroup>
-    <PlaceholderReference Include="Tc2_MC2">
-      <DefaultResolution>Tc2_MC2, * (Beckhoff Automation GmbH)</DefaultResolution>
-      <Namespace>Tc2_MC2</Namespace>
-    </PlaceholderReference>
     <PlaceholderReference Include="Tc2_Standard">
       <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc2_Standard</Namespace>
@@ -97,10 +94,6 @@
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc3_Module</Namespace>
       <SystemLibrary>true</SystemLibrary>
-    </PlaceholderReference>
-    <PlaceholderReference Include="Tc3_mxAutomationV3_3">
-      <DefaultResolution>Tc3_mxAutomationV3_3, * (Beckhoff Automation GmbH)</DefaultResolution>
-      <Namespace>Tc3_mxAutomationV3_3</Namespace>
     </PlaceholderReference>
   </ItemGroup>
   <ItemGroup>
